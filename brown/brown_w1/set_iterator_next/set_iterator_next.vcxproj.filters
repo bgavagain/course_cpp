@@ -18,6 +18,9 @@
     <ClCompile Include="set_iterator_next.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="solution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\hash_set\test_runner.h">

@@ -47,7 +47,21 @@ private:
 
 
 Node* Next(Node* me) {
-	return nullptr;
+	if (me->right == nullptr) { //bottom
+		Node* tmp = me->parent;
+		while (tmp) {
+			if (tmp->value < me->value) { tmp = tmp->parent; }
+			else break;
+		}
+		return tmp;
+	}
+	else {
+		Node* tmp = me->right;
+		while(tmp->left) {
+			tmp = tmp->left;
+		}			
+		return tmp;
+	}
 }
 
 
