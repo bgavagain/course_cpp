@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="hash_person.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="solution.cpp">
+    <ClCompile Include="secondary_index.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
