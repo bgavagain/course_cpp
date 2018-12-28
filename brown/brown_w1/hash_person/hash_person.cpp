@@ -10,7 +10,9 @@ struct Address {
 	int building;
 
 	bool operator==(const Address& other) const {
-		// реализуйте оператор
+		return (city == other.city 
+			&& street == other.street 
+			&& building == other.building);
 	}
 };
 
@@ -21,19 +23,45 @@ struct Person {
 	Address address;
 
 	bool operator==(const Person& other) const {
-		// реализуйте оператор
+		return (name == other.name
+			&& height == other.height
+			&& weight == other.weight
+			&& address == other.address);
 	}
 };
 
 struct AddressHasher {
-	// реализуйте структуру
+	size_t operator()(const Address& address) const {
+		const size_t coef = 42;
+
+		const hash<string> city_hasher;
+		const hash<string> street_hasher;
+		const hash<int> building_hasher;
+
+		return (
+			coef * coef * building_hasher(address.building) +
+			coef * street_hasher(address.street) +
+			city_hasher(address.city)
+			);
+	}
 };
 
 struct PersonHasher {
-	// реализуйте структуру
+	size_t operator()(const Person& person) const {
+		const size_t coef = 58;
+
+		const hash<string> name_hasher;
+		const hash<double> weight_hasher;
+		const hash<int> height_hasher;
+
+		return (
+			coef * coef * weight_hasher(person.weight) +
+			coef * name_hasher(person.name) +
+			height_hasher(person.height)
+			);
+	}
 };
 
-// сгенерированы командой:
 // $ sort -R /usr/share/dict/propernames | head -n 100
 //
 // http://www.freebsd.org/cgi/cvsweb.cgi/~checkout~/src/share/dict/propernames
