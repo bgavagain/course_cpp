@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="hash_person.cpp" />
+    <ClCompile Include="solutioncpp.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_runner.h" />
