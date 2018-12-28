@@ -22,6 +22,10 @@ struct Person {
 	double weight;
 	Address address;
 
+	Person() = default;
+	Person(const string& n, int h, double w, Address a) : 
+		name(n), height(h), weight(w), address(a) {}
+
 	bool operator==(const Person& other) const {
 		return (name == other.name
 			&& height == other.height
@@ -41,14 +45,13 @@ struct AddressHasher {
 		return (
 			coef * coef * building_hasher(address.building) +
 			coef * street_hasher(address.street) +
-			city_hasher(address.city)
-			);
+			city_hasher(address.city));
 	}
 };
 
 struct PersonHasher {
 	size_t operator()(const Person& person) const {
-		const size_t coef = 58;
+		const size_t coef = 100;
 
 		const hash<string> name_hasher;
 		const hash<double> weight_hasher;
@@ -57,11 +60,11 @@ struct PersonHasher {
 		return (
 			coef * coef * weight_hasher(person.weight) +
 			coef * name_hasher(person.name) +
-			height_hasher(person.height)
-			);
+			height_hasher(person.height));
 	}
 };
 
+// сгенерированы командой:
 // $ sort -R /usr/share/dict/propernames | head -n 100
 //
 // http://www.freebsd.org/cgi/cvsweb.cgi/~checkout~/src/share/dict/propernames

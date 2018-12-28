@@ -2,6 +2,7 @@
 #include <forward_list>
 #include <iterator>
 #include <vector>
+#include <cassert>
 
 using namespace std;
 
