@@ -61,7 +61,8 @@ public:
 		auto l = timestamp_idx.lower_bound(low);
 		auto u = timestamp_idx.upper_bound(high);
 		for (auto& it = l; it != u; ++it) {
-			callback(*it.second);
+			auto& val = *it;
+			if (!callback(val.second)) { break; }
 		}
 	}
 
@@ -71,7 +72,7 @@ public:
 		auto u = karma_idx.upper_bound(high);
 		for (auto& it = l; it != u; ++it) {
 			auto& val = *it;
-			callback(val.second);
+			if (!callback(val.second)) { break; }
 		}
 	}
 
@@ -81,7 +82,7 @@ public:
 		auto u = user_idx.upper_bound(user);
 		for (auto& it = l; it != u; ++it) {
 			auto& val = *it;
-			callback(val.second);
+			if (!callback(val.second)) { break; }
 		}
 	}
 private:
