@@ -15,21 +15,20 @@ struct Record {
 	int karma;
 };
 
-// � еализуйте этот класс
 class Database {
 public:
-	bool Put(const Record& record);
-	const Record* GetById(const string& id) const;
-	bool Erase(const string& id);
+	bool Put(const Record& record) { return true; }
+	const Record* GetById(const string& id) const { return nullptr; }
+	bool Erase(const string& id) { return true; }
 
 	template <typename Callback>
-	void RangeByTimestamp(int low, int high, Callback callback) const;
+	void RangeByTimestamp(int low, int high, Callback callback) const {}
 
 	template <typename Callback>
-	void RangeByKarma(int low, int high, Callback callback) const;
+	void RangeByKarma(int low, int high, Callback callback) const {}
 
 	template <typename Callback>
-	void AllByUser(const string& user, Callback callback) const;
+	void AllByUser(const string& user, Callback callback) const {}
 };
 
 void TestRangeBoundaries() {
