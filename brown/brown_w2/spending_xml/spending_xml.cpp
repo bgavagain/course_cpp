@@ -1,4 +1,4 @@
-﻿#include "xml.h"
+#include "xml.h"
 #include "test_runner.h"
 
 #include <algorithm>
@@ -77,8 +77,6 @@ void TestLoadFromXml() {
 }
 
 void TestXmlLibrary() {
-	// Тест демонстрирует, как пользоваться библиотекой из файла xml.h
-
 	istringstream xml_input(R"(<july>
     <spend amount="2500" category="food"></spend>
     <spend amount="23740" category="travel"></spend>
