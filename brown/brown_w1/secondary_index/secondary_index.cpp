@@ -17,18 +17,78 @@ struct Record {
 
 class Database {
 public:
-	bool Put(const Record& record) { return true; }
-	const Record* GetById(const string& id) const { return nullptr; }
-	bool Erase(const string& id) { return true; }
+	bool Put(const Record& record) {
+		if (data.count(record.id)) { return false; }
+		data[record.id] = record;
+		karma_idx.insert(make_pair(record.karma, record));
+		timestamp_idx.insert(make_pair(record.timestamp, record));
+		user_idx.insert(make_pair(record.user, record));
+		return true;
+	}
+
+	const Record* GetById(const string& id) const {
+		if (!data.count(id)) { return nullptr; }
+		else { return &data.at(id); }
+	}
+
+	template<typename T>
+	void DeleteIdx(multimap<T, Record>& mm, T val, const Record & rec) {
+		auto low = mm.lower_bound(val);
+		auto up = mm.upper_bound(val);
+		for (auto it = low; it != up; ++it) {
+			auto v = *it;
+			if (v.second.id == rec.id) {
+				mm.erase(it);
+				break;
+			}
+		}
+	}
+
+	bool Erase(const string& id) { 
+		if (!data.count(id)) { return false; }
+
+		auto rec = data[id];
+		DeleteIdx(karma_idx, rec.karma, rec);
+		DeleteIdx(timestamp_idx, rec.timestamp, rec);
+		DeleteIdx(user_idx, rec.user, rec);
+		data.erase(id);
+
+		return true; 
+	}
 
 	template <typename Callback>
-	void RangeByTimestamp(int low, int high, Callback callback) const {}
+	void RangeByTimestamp(int low, int high, Callback callback) const {
+		auto l = timestamp_idx.lower_bound(low);
+		auto u = timestamp_idx.upper_bound(high);
+		for (auto& it = l; it != u; ++it) {
+			callback(*it.second);
+		}
+	}
 
 	template <typename Callback>
-	void RangeByKarma(int low, int high, Callback callback) const {}
+	void RangeByKarma(int low, int high, Callback callback) const {
+		auto l = karma_idx.lower_bound(low);
+		auto u = karma_idx.upper_bound(high);
+		for (auto& it = l; it != u; ++it) {
+			auto& val = *it;
+			callback(val.second);
+		}
+	}
 
 	template <typename Callback>
-	void AllByUser(const string& user, Callback callback) const {}
+	void AllByUser(const string& user, Callback callback) const {
+		auto l = user_idx.lower_bound(user);
+		auto u = user_idx.upper_bound(user);
+		for (auto& it = l; it != u; ++it) {
+			auto& val = *it;
+			callback(val.second);
+		}
+	}
+private:
+	map<string, Record> data;
+	multimap<int, Record> karma_idx;
+	multimap<int, Record> timestamp_idx;
+	multimap<string, Record> user_idx;
 };
 
 void TestRangeBoundaries() {
