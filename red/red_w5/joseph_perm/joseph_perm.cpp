@@ -16,15 +16,11 @@ using namespace std;
 template <typename RandomIt>
 void MakeJosephusPermutationOrig(RandomIt first, RandomIt last, uint32_t step_size) {
     vector<typename RandomIt::value_type> tmp;
-	tmp.reserve(distance(first, last));
 	{
 		LOG_DURATION("init orig");
+		tmp.reserve(distance(first, last));
 		move(first, last, back_inserter(tmp));
 	}
-
-	auto f = &*first;
-	auto c = &*tmp.begin();
-	cout << f << " " << c << endl;
 
 	{
 		LOG_DURATION("calc orig");
@@ -42,58 +38,37 @@ void MakeJosephusPermutationOrig(RandomIt first, RandomIt last, uint32_t step_si
 
 template <typename RandomIt>
 void MakeJosephusPermutation(RandomIt first, RandomIt last, size_t step_size) {
-	list<typename RandomIt::value_type> tmp;
+	vector<typename RandomIt::value_type> tmp;
+	size_t size = distance(first, last);
+	list<int> killed(size);
 	{
 		LOG_DURATION("init my");
+		tmp.reserve(distance(first, last));
 		move(first, last, back_inserter(tmp));
+		iota(begin(killed), end(killed), 0);
 	}
-	auto it = tmp.begin();
-	size_t pos = 0;
-	size_t size = tmp.size();
-
 	{
 		LOG_DURATION("calc my");
-		while (!tmp.empty()) {
-			*(first++) = move(*it);
-			it = tmp.erase(it); --size;
-			if (tmp.empty()) break;
+
+		size_t pos = 0;
+		auto it = killed.begin();
+		while (!killed.empty()) {
+			*(first++) = move(tmp[*it]);
+			it = killed.erase(it); --size;
+			if (killed.empty()) break;
 
 			size_t next = pos + step_size - 1;
-			if (next < size) {
-				pos = next;
+			size_t new_pos = next % size;
+			if (new_pos > pos) {
 				advance(it, step_size - 1);
 			}
 			else {
-				pos = next % size;
-				it = tmp.begin();
-				advance(it, pos);
+				it = killed.begin();
+				advance(it, new_pos);
 			}
+			pos = new_pos;
 		}
 	}
-
-	
-
-
- //   size_t size = distance(first, last);
-	//vector<typename RandomIt::value_type> tmp;
-	//move(first, last, back_inserter(tmp));
-	//vector<size_t> lst(size);
-	//iota(lst.begin(), lst.end(), 0);
-
-	//auto it = lst.begin();
-	//while (!lst.empty()) {
-	//	*(first++) = move(tmp[*it]);
-	//	it = lst.erase(it);
-	//	if (lst.empty()) break;
-	//	size_t d = distance(lst.begin(), it);
-
-	//	if (lst.size() - d > step_size)
-	//		it = next(it, step_size - 1);
-	//	else {
-	//		size_t offset = (d + step_size - 1) % lst.size();
-	//		it = next(lst.begin(), offset);
-	//	}
-	//}
 }
 
 vector<int> MakeTestVector(size_t size) {
@@ -118,11 +93,11 @@ void TestIntVectorOrig() {
 
 void TestIntVector() {
     const vector<int> numbers = MakeTestVector(10);
-    //{
-    //    vector<int> numbers_copy = numbers;
-    //    MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 1);
-    //    ASSERT_EQUAL(numbers_copy, numbers);
-    //}
+    {
+        vector<int> numbers_copy = numbers;
+        MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 1);
+        ASSERT_EQUAL(numbers_copy, numbers);
+    }
     {
         vector<int> numbers_copy = numbers;
         MakeJosephusPermutation(begin(numbers_copy), end(numbers_copy), 3);
@@ -191,13 +166,13 @@ void TestAvoidsCopying() {
 
 int main() {
     TestRunner tr;
- //   RUN_TEST(tr, TestIntVectorOrig);
- //   RUN_TEST(tr, TestAvoidsCopyingOrig);
-	RUN_TEST(tr, TestIntVector);
- //   RUN_TEST(tr, TestAvoidsCopying);
+    //RUN_TEST(tr, TestIntVectorOrig);
+    //RUN_TEST(tr, TestAvoidsCopyingOrig);
+	//RUN_TEST(tr, TestIntVector);
+    //RUN_TEST(tr, TestAvoidsCopying);
 
 
-	const vector<int> numbers = MakeTestVector(100000);
+	const vector<int> numbers = MakeTestVector(200);
 	{	LOG_DURATION("int");
 		vector<int> numbers_copy = numbers;
 		MakeJosephusPermutationOrig(begin(numbers_copy), end(numbers_copy), 100);
