@@ -7,6 +7,7 @@
 #include <vector>
 #include <list>
 #include <utility>
+#include <algorithm>
 
 using namespace std;
 
@@ -15,12 +16,15 @@ using namespace std;
 template <typename RandomIt>
 void MakeJosephusPermutationOrig(RandomIt first, RandomIt last, uint32_t step_size) {
     vector<typename RandomIt::value_type> tmp;
+	tmp.reserve(distance(first, last));
 	{
 		LOG_DURATION("init orig");
-		for (auto it = first; it != last; ++it) {
-			tmp.push_back(move(*it));
-		}
+		move(first, last, back_inserter(tmp));
 	}
+
+	auto f = &*first;
+	auto c = &*tmp.begin();
+	cout << f << " " << c << endl;
 
 	{
 		LOG_DURATION("calc orig");
@@ -36,91 +40,61 @@ void MakeJosephusPermutationOrig(RandomIt first, RandomIt last, uint32_t step_si
 	}
 }
 
-struct Node {
-	Node* next;
-	void* data;
-
-	Node(Node* n, void* d) : next(n), data(d) {}
-};
-
 template <typename RandomIt>
 void MakeJosephusPermutation(RandomIt first, RandomIt last, size_t step_size) {
-	Node* head = nullptr;
-	Node* prev = nullptr;
-	//list<typename RandomIt::value_type> lst;
+	list<typename RandomIt::value_type> tmp;
 	{
-		LOG_DURATION("init");
-		for (auto it = first; it != last; ++it) {
-			Node* n = new Node(nullptr, &*it);
+		LOG_DURATION("init my");
+		move(first, last, back_inserter(tmp));
+	}
+	auto it = tmp.begin();
+	size_t pos = 0;
+	size_t size = tmp.size();
 
-			if (head == nullptr) {
-				head = n;
-				prev = head;
-			} else { prev->next = n; }
-			prev = n;
+	{
+		LOG_DURATION("calc my");
+		while (!tmp.empty()) {
+			*(first++) = move(*it);
+			it = tmp.erase(it); --size;
+			if (tmp.empty()) break;
+
+			size_t next = pos + step_size - 1;
+			if (next < size) {
+				pos = next;
+				advance(it, step_size - 1);
+			}
+			else {
+				pos = next % size;
+				it = tmp.begin();
+				advance(it, pos);
+			}
 		}
-		//loop the list
-		prev->next = head;
-		
-	//	move(first, last, back_inserter(lst)); 
 	}
 
-	if (head != nullptr) {
-		prev = head;
-		Node* next = prev->next;
-		delete prev;
-		while (next != nullptr) {
-			prev = next;
-			next = prev->next;
-			delete prev;
-		}
-	}
+	
 
-	//{
-	//	LOG_DURATION("calc");
-	//	auto it = lst.begin();
-	//	while (!lst.empty()) {
-	//		*(first++) = move(*it);
-	//		//cout << *it << " ";
 
-	//		it = lst.erase(it);
-	//		if (lst.empty()) { break; }
+ //   size_t size = distance(first, last);
+	//vector<typename RandomIt::value_type> tmp;
+	//move(first, last, back_inserter(tmp));
+	//vector<size_t> lst(size);
+	//iota(lst.begin(), lst.end(), 0);
 
-	//		for (size_t s = 0; s < step_size -1; ++s) {
-	//			if (it == lst.end()) { it = lst.begin(); }
-	//			if (lst.size() > 1) { 
-	//				advance(it, 1);
-	//				if (it == lst.end()) { it = lst.begin(); }
-	//			}
-	//		}
+	//auto it = lst.begin();
+	//while (!lst.empty()) {
+	//	*(first++) = move(tmp[*it]);
+	//	it = lst.erase(it);
+	//	if (lst.empty()) break;
+	//	size_t d = distance(lst.begin(), it);
+
+	//	if (lst.size() - d > step_size)
+	//		it = next(it, step_size - 1);
+	//	else {
+	//		size_t offset = (d + step_size - 1) % lst.size();
+	//		it = next(lst.begin(), offset);
 	//	}
 	//}
 }
-
-
-//template <typename RandomIt>
-//void MakeJosephusPermutation(RandomIt first, RandomIt last, size_t step_size) {
-//    size_t size = distance(first, last);
-//	vector<typename RandomIt::value_type> tmp;
-//	move(first, last, back_inserter(tmp));
-//	vector<size_t> lst(size);
-//	iota(lst.begin(), lst.end(), 0);
-//
-//	auto it = lst.begin();
-//	while (!lst.empty()) {
-//		*(first++) = move(tmp[*it]);
-//		it = lst.erase(it);
-//		if (lst.empty()) break;
-//		size_t d = distance(lst.begin(), it);
-//
-//		if (lst.size() - d > step_size)
-//			it = next(it, step_size - 1);
-//		else {
-//			size_t offset = (d + step_size - 1) % lst.size();
-//			it = next(lst.begin(), offset);
-//		}
-//	}
-//}
 
 vector<int> MakeTestVector(size_t size) {
     vector<int> numbers(size);
