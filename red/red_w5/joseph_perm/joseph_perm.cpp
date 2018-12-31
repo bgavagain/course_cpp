@@ -60,7 +60,7 @@ void MakeJosephusPermutation(RandomIt first, RandomIt last, size_t step_size) {
 			size_t next = pos + step_size - 1;
 			size_t new_pos = next % size;
 			if (new_pos > pos) {
-				advance(it, step_size - 1);
+				advance(it, new_pos - pos - 1);
 			}
 			else {
 				it = killed.begin();
@@ -172,7 +172,7 @@ int main() {
     //RUN_TEST(tr, TestAvoidsCopying);
 
 
-	const vector<int> numbers = MakeTestVector(200);
+	const vector<int> numbers = MakeTestVector(100000);
 	{	LOG_DURATION("int");
 		vector<int> numbers_copy = numbers;
 		MakeJosephusPermutationOrig(begin(numbers_copy), end(numbers_copy), 100);
