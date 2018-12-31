@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.28407.52
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "joseph_perm", "joseph_perm\joseph_perm.vcxproj", "{B42ABD7A-F622-4E18-93C6-6135C2BBBBEF}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "split_into_sentences", "split_into_sentences\split_into_sentences.vcxproj", "{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{B42ABD7A-F622-4E18-93C6-6135C2BBBBEF}.Release|x64.Build.0 = Release|x64
 		{B42ABD7A-F622-4E18-93C6-6135C2BBBBEF}.Release|x86.ActiveCfg = Release|Win32
 		{B42ABD7A-F622-4E18-93C6-6135C2BBBBEF}.Release|x86.Build.0 = Release|Win32
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Debug|x64.ActiveCfg = Debug|x64
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Debug|x64.Build.0 = Debug|x64
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Debug|x86.ActiveCfg = Debug|Win32
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Debug|x86.Build.0 = Debug|Win32
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Release|x64.ActiveCfg = Release|x64
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Release|x64.Build.0 = Release|x64
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Release|x86.ActiveCfg = Release|Win32
+		{0839CAEB-F21C-4C3E-8FAD-2FFEABFAF34B}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
