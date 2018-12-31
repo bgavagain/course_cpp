@@ -154,6 +154,7 @@
   <ItemGroup>
     <ClCompile Include="copy_solution.cpp" />
     <ClCompile Include="joseph_perm.cpp" />
+    <ClCompile Include="solution.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="profile.h" />

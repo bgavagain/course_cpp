@@ -16,14 +16,14 @@ using namespace std;
 template <typename RandomIt>
 void MakeJosephusPermutationOrig(RandomIt first, RandomIt last, uint32_t step_size) {
     vector<typename RandomIt::value_type> tmp;
-	{
-		LOG_DURATION("init orig");
+	//{
+	//	LOG_DURATION("init orig");
 		tmp.reserve(distance(first, last));
 		move(first, last, back_inserter(tmp));
-	}
+//	}
 
-	{
-		LOG_DURATION("calc orig");
+	//{
+	//	LOG_DURATION("calc orig");
 		size_t cur_pos = 0;
 		while (!tmp.empty()) {
 			*(first++) = move(tmp[cur_pos]);
@@ -33,59 +33,31 @@ void MakeJosephusPermutationOrig(RandomIt first, RandomIt last, uint32_t step_si
 			}
 			cur_pos = (cur_pos + step_size - 1) % tmp.size();
 		}
-	}
+//	}
 }
 
 template <typename RandomIt>
-void MakeJosephusPermutation(RandomIt first, RandomIt last, size_t step_size) {
-	vector<typename RandomIt::value_type> tmp;
-	vector<size_t>ptr;
-	size_t size = distance(first, last);
-//	list<int> killed(size);
-	//{
-	//	LOG_DURATION("init my");
-		tmp.reserve(size);
-		ptr.resize(size);
-		move(first, last, back_inserter(tmp));
-		iota(begin(ptr), end(ptr), 1);
-		ptr.back() = 1;
-	//}
+void MakeJosephusPermutation(RandomIt first, RandomIt last, uint32_t step_size) {
+	const uint32_t size = last - first;
+	if (size < 2) return;
 
-	//{
-	//	LOG_DURATION("calc my");
+	vector<uint32_t> apos(size);
+	vector<typename RandomIt::value_type> perm;
+	iota(begin(apos), end(apos), 1);
+	apos.back() = 0;
 
-		first++;
-		size_t pos = 0;
-		for (size_t i = 1; i < size; ++i) {
-			size_t cnt = 0;
-			while (cnt < step_size -1) {
-				pos = ptr[pos];
-				++cnt;
-			}
-			auto val = ptr[pos];
-			*(first++) = move(tmp[val]);
-			ptr[pos] = ptr[val];
+	uint32_t pos = 0;
+	uint32_t preva = size - 1;
+	for (uint32_t s = 0; s < size; ++s) {
+		perm.push_back(move(*(first + pos)));
+		apos[preva] = apos[pos];
+		for (uint32_t i = 0; i < step_size; ++i) {
+			if (i > 0) { preva = pos; }
+			pos = apos[pos];
 		}
+	}
 
-	//	size_t pos = 0;
-	//	auto it = killed.begin();
-	//	while (!killed.empty()) {
-	//		*(first++) = move(tmp[*it]);
-	//		it = killed.erase(it); --size;
-	//		if (killed.empty()) break;
-
-	//		size_t next = pos + step_size - 1;
-	//		size_t new_pos = next % size;
-	//		if (new_pos > pos) {
-	//			advance(it, new_pos - pos - 1);
-	//		}
-	//		else {
-	//			it = killed.begin();
-	//			advance(it, new_pos);
-	//		}
-	//		pos = new_pos;
-	//	}
-	//}
+	move(begin(perm), end(perm), first);
 }
 
 vector<int> MakeTestVector(size_t size) {

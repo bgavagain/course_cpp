@@ -21,6 +21,9 @@
     <ClCompile Include="copy_solution.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="solution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="profile.h">
