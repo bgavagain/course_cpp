@@ -53,6 +53,18 @@ vector<Spending> LoadFromXml(istream& input) {
 	return res;
 }
 
+namespace StringUtils {
+	struct Wrapper {
+		int value;
+	};
+}
+
+namespace StringUtils {
+	struct Wrapper {
+		string value;
+	};
+}
+
 void TestLoadFromXml() {
 	istringstream xml_input(R"(<july>
     <spend amount="2500" category="food"></spend>
