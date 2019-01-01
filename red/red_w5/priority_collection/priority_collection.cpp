@@ -6,13 +6,16 @@
 #include <set>
 #include <utility>
 #include <vector>
+#include <unordered_set>
 
 using namespace std;
 
 template <typename T>
 class PriorityCollection {
 public:
-	using Id = size_t; //TODO: 
+	using Id = size_t; //TODO:
+	
+	PriorityCollection() {};
 
 	//Add zero-priority object
 	Id Add(T object) { return 0; }
@@ -32,7 +35,8 @@ public:
 	pair<T, int> PopMax() { return {}; }
 
 private:
-	const T data; //TODO: temp
+	set<unordered_set<T>> data;
+
 };
 
 
