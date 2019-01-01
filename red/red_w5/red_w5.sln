@@ -13,6 +13,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "concurrent_map", "concurren
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "merge_sort_3", "merge_sort_3\merge_sort_3.vcxproj", "{AF06F096-25BB-4B75-B4DA-7B9ED259D425}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "priority_collection", "priority_collection\priority_collection.vcxproj", "{7A8F3C38-7DEA-4165-9C72-4C86D9927584}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -61,6 +63,14 @@ Global
 		{AF06F096-25BB-4B75-B4DA-7B9ED259D425}.Release|x64.Build.0 = Release|x64
 		{AF06F096-25BB-4B75-B4DA-7B9ED259D425}.Release|x86.ActiveCfg = Release|Win32
 		{AF06F096-25BB-4B75-B4DA-7B9ED259D425}.Release|x86.Build.0 = Release|Win32
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Debug|x64.ActiveCfg = Debug|x64
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Debug|x64.Build.0 = Debug|x64
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Debug|x86.ActiveCfg = Debug|Win32
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Debug|x86.Build.0 = Debug|Win32
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Release|x64.ActiveCfg = Release|x64
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Release|x64.Build.0 = Release|x64
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Release|x86.ActiveCfg = Release|Win32
+		{7A8F3C38-7DEA-4165-9C72-4C86D9927584}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
