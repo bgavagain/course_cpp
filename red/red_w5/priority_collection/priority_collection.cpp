@@ -6,37 +6,78 @@
 #include <set>
 #include <utility>
 #include <vector>
-#include <unordered_set>
+#include <functional>
+#include <complex>
 
 using namespace std;
 
 template <typename T>
 class PriorityCollection {
 public:
-	using Id = size_t; //TODO:
+	using Id = complex<uint32_t>;
 	
 	PriorityCollection() {};
 
-	//Add zero-priority object
-	Id Add(T object) { return 0; }
+	Id Add(T object) { 
+		data_[0].push_back(move(object));
+		return { 0, data_[0].size() -1 };
+	}
 
 	template <typename ObjInputIt, typename IdOutputIt>
-	void Add(ObjInputIt range_begin, ObjInputIt range_end,
-		IdOutputIt ids_begin) {}
+	void Add(ObjInputIt range_begin, ObjInputIt range_end, IdOutputIt ids_begin) {
+		for (auto it = range_begin; it != range_end; ++it) {
+			Add(*it);
+		}
+	}
 
-	bool IsValid(Id id) const { return false; }
+	bool IsValid(Id id) const {
+		return data_.count(id.real) && id.imag < data_.at(id.real).size();
+	}
 
-	const T& Get(Id id) const { return data; } //TODO:
+	const T& Get(Id id) const { 
+		return data_[id.real][id.imag];
+	}
 
-	void Promote(Id id) {}
+	void Promote(Id id) {
+		auto p = id.real();
+		auto i = id.imag();
 
-	pair<const T&, int> GetMax() const { return {}; };
+		auto& vp = data_.at(p);
+		T obj = move(vp[i]);
+		vp.erase(vp.begin() + id.imag());
+		if (vp.size() == 0) { data_.erase(it); }
 
-	pair<T, int> PopMax() { return {}; }
+		//auto itn = data[id.real + 1];
+		//auto& vp = (*itp).second;
+		//T obj = move(vp[id.imag]);
+		//vp.erase(vp.begin() + id.imag);
+		//if (vp.size() == 0) { data_.erase(itp); }
+	}
+
+	pair<const T&, int> GetMax() const {
+		auto it = prev(data_.end());
+		auto i = (*it).first;
+		auto& v = (*it).second;
+
+		return { v.back(), i };
+	};
+
+	pair<T, int> PopMax() { 
+		auto it = prev(data_.end());
+		auto i = (*it).first;
+		auto& v = (*it).second;
+
+		T obj = move(v.back());
+		v.pop_back();
+		if (v.size() == 0) { data_.erase(it); }
+
+		return { move(obj), i };
+	}
 
 private:
-	set<unordered_set<T>> data;
-
+	uint32_t idx = 0;
+	T d;
+	map<uint32_t, vector<T>> data_;
 };
 
 
@@ -60,6 +101,12 @@ void TestNoCopy() {
 		strings.Promote(red_id);
 	}
 	strings.Promote(yellow_id);
+
+	{
+		const auto item = strings.GetMax();
+		ASSERT_EQUAL(item.first, "red");
+		ASSERT_EQUAL(item.second, 2);
+	}
 	{
 		const auto item = strings.PopMax();
 		ASSERT_EQUAL(item.first, "red");
