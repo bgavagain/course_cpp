@@ -30,20 +30,38 @@ bool CheckWholeWord(size_t pos, size_t len, string_view sv) {
 	return true;
 }
 
-Stats ExploreLine(const set<string>& key_words, string_view str) {
-	Stats result;
+Stats ExploreLine(const set<string>& key_words, const string& str) {
+	//Stats result;
 
-	for (const auto& word : key_words) {
-		string_view sv(str);
-		int count = 0;
+	//for (const auto& word : key_words) {
+	//	string_view sv(str);
+	//	int count = 0;
 
-		for (size_t pos = sv.find(word); pos != sv.npos; pos = sv.find(word, pos + word.length())) {
-			if (CheckWholeWord(pos, word.length(), sv)) { ++count; }
+	//	for (size_t pos = sv.find(word); pos != sv.npos; pos = sv.find(word, pos + word.length())) {
+	//		if (CheckWholeWord(pos, word.length(), sv)) { ++count; }
+	//	}
+	//	if (count) { result.word_frequences[word] = count; }
+	//}
+
+	//return result;
+
+	string_view s = str;
+	Stats stats;
+	size_t start = s.find_first_not_of(" \f\n\r\t\v");
+	s.remove_prefix(start);
+
+
+	while (true) {
+		size_t space = s.find_first_of(" \n");
+		string word(s.substr(0, space));
+		if (key_words.count(word)) {
+			++stats.word_frequences[word];
 		}
-		if (count) { result.word_frequences[word] = count; }
+		if (space == s.npos) {	break; }
+		else { s.remove_prefix(space + 1); }
 	}
 
-	return result;
+	return stats;
 }
 
 Stats ExploreKeyWordsSingleThread(const set<string>& key_words, istream& input) {
@@ -66,18 +84,21 @@ Stats ExploreKeyWordsSingleThread(const set<string>& key_words, istream& input) 
 //	return res;
 //}
 
-Stats ProcessChunk(string_view str, set<string>::iterator begin, set<string>::iterator end) {
+Stats ProcessChunk(const string& str, set<string>::iterator begin, set<string>::iterator end) {
 	Stats result;
 
-	for (auto it = begin ; it != end; ++it) {
-		auto word = *it;
-		string_view sv(str);
-		int count = 0;		
-		for (size_t pos = sv.find(word); pos != sv.npos; pos = sv.find(word, pos + word.length())) {
-			if (CheckWholeWord(pos, word.length(), sv)) { ++count; }
-		}
-		if (count) { result.word_frequences[word] = count; }
-	}
+	set<string> key_words(begin, end);
+	result += ExploreLine(key_words, str);
+
+	//for (auto it = begin ; it != end; ++it) {
+	//	auto word = *it;
+	//	string_view sv(str);
+	//	int count = 0;		
+	//	for (size_t pos = sv.find(word); pos != sv.npos; pos = sv.find(word, pos + word.length())) {
+	//		if (CheckWholeWord(pos, word.length(), sv)) { ++count; }
+	//	}
+	//	if (count) { result.word_frequences[word] = count; }
+	//}
 
 	return result;
 }
@@ -87,7 +108,9 @@ Stats ExploreKeyWords(const set<string>& key_words, istream& input) {
 
 	string s = ReadBuffer(input);
 
-	const int D_DIVIDE = 8;
+	//result += ExploreLine(key_words, s);
+
+	const int D_DIVIDE = 4;
 	size_t chunk = key_words.size() / D_DIVIDE;
 	vector<future<Stats>> vf;
 
@@ -101,6 +124,18 @@ Stats ExploreKeyWords(const set<string>& key_words, istream& input) {
 
 	for (auto& e : vf) {
 		result += e.get();
+	}
+
+	return result;
+}
+
+Stats ExploreKeyWordsNew(const set<string>& key_words, istream& input) {
+	Stats result;
+
+	vector<string> v;
+	v.reserve(50000);
+	for (string s; getline(input, s);) {
+		v.push_back(move(s));
 	}
 
 	return result;
@@ -201,6 +236,7 @@ int main() {
 
 	stringstream ss1(s);
 	stringstream ss3(s);
+	stringstream ss4(s);
 	
 	Stats res_single;
 	{
@@ -213,4 +249,10 @@ int main() {
 		LOG_DURATION("read");
 		res_multi += ExploreKeyWords(key_words, ss3);
 	}
+
+	//Stats res_multi_new;
+	//{
+	//	LOG_DURATION("read new");
+	//	res_multi_new += ExploreKeyWordsNew(key_words, ss4);
+	//}
 }
