@@ -6,8 +6,6 @@
 #include <set>
 #include <utility>
 #include <vector>
-#include <functional>
-#include <complex>
 
 using namespace std;
 
@@ -37,37 +35,40 @@ public:
 	}
 
 	const T& Get(Id id) const { 
-		return data_[idx.at(id)].at(id);
+		return data_.at(idx.at(id)).at(id);
 	}
 
 	void Promote(Id id) {
 		auto& prev = data_[idx.at(id)];
 		T obj = move(prev.at(id));
+
 		prev.erase(id);
+		if (prev.size() == 0) { data_.erase(idx.at(id)); }
+
 		++idx.at(id);
-		auto nprio = idx.at(id);
-		data_[nprio].insert({ id, move(obj) });
+		data_[idx.at(id)].insert({ id, move(obj) });
 	}
 
 	pair<const T&, int> GetMax() const {
-		auto it = prev(idx.end());
-		auto id = (*it).first;
-		auto prio = (*it).second;
+		auto pr_it = prev(data_.end());
+		auto it = prev((*pr_it).second.end());
 
-		return { data_.at(prio).at(id), prio};
+		return { (*it).second, (*pr_it).first };
 	};
 
 	pair<T, int> PopMax() { 
-		auto it = prev(idx.end());
+		auto pr_it = prev(data_.end());
+		auto prio = (*pr_it).first;
+		auto& prio_map = (*pr_it).second;
+		auto it = prev(prio_map.end());
 		auto id = (*it).first;
-		auto prio = (*it).second;
-		auto& m = data_[prio];
-		T obj = move(m.at(id));
+		T obj = move((*it).second);
 
-		m.erase(id);
+		prio_map.erase(it);
+		if (prio_map.size() == 0) { data_.erase(pr_it); }
 		idx.erase(id);
 
-		return {move(obj), prio};
+		return {move(obj), prio };
 	}
 
 private:
@@ -108,6 +109,11 @@ void TestNoCopy() {
 	strings.Promote(yellow_id);
 
 	{
+		const auto& get = strings.Get(1);
+		ASSERT(strings.IsValid(1));
+		ASSERT_EQUAL(get, "bbb");
+	}
+	{
 		const auto item = strings.GetMax();
 		ASSERT_EQUAL(item.first, "red");
 		ASSERT_EQUAL(item.second, 2);
@@ -134,6 +140,3 @@ int main() {
 	RUN_TEST(tr, TestNoCopy);
 	return 0;
 }
-
-
-//r<std::vector<int> >; T = __CourseraNonCopyable<int>]':\n/tmp/submissionpo141d3x/priority_collection.cpp:333:66:   required from here\n/tmp/submissionpo141d3x/priority_collection.cpp:31:7: error: use of deleted function '__CourseraNonCopyable<T>::__CourseraNonCopyable(const __CourseraNonCopyable<T>&) [with T = int]'\n    Add(*it);\n    ~~~^~~~~\ncompilation terminated due to -Wfatal-errors.\n"
