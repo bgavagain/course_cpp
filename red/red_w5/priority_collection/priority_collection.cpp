@@ -14,13 +14,15 @@ using namespace std;
 template <typename T>
 class PriorityCollection {
 public:
-	using Id = complex<uint32_t>;
-	
+	using Id = int;
+
 	PriorityCollection() {};
 
 	Id Add(T object) { 
-		data_[0].push_back(move(object));
-		return { 0, data_[0].size() -1 };
+		++cnt;
+		data_[0].insert({ cnt, move(object) });
+		idx[cnt] = 0;
+		return cnt;
 	}
 
 	template <typename ObjInputIt, typename IdOutputIt>
@@ -31,53 +33,47 @@ public:
 	}
 
 	bool IsValid(Id id) const {
-		return data_.count(id.real) && id.imag < data_.at(id.real).size();
+		return idx.count(id);
 	}
 
 	const T& Get(Id id) const { 
-		return data_[id.real][id.imag];
+		return data_[idx.at(id)].at(id);
 	}
 
 	void Promote(Id id) {
-		auto p = id.real();
-		auto i = id.imag();
-
-		auto& vp = data_.at(p);
-		T obj = move(vp[i]);
-		vp.erase(vp.begin() + id.imag());
-		if (vp.size() == 0) { data_.erase(it); }
-
-		//auto itn = data[id.real + 1];
-		//auto& vp = (*itp).second;
-		//T obj = move(vp[id.imag]);
-		//vp.erase(vp.begin() + id.imag);
-		//if (vp.size() == 0) { data_.erase(itp); }
+		auto& prev = data_[idx.at(id)];
+		T obj = move(prev.at(id));
+		prev.erase(id);
+		++idx.at(id);
+		auto nprio = idx.at(id);
+		data_[nprio].insert({ id, move(obj) });
 	}
 
 	pair<const T&, int> GetMax() const {
-		auto it = prev(data_.end());
-		auto i = (*it).first;
-		auto& v = (*it).second;
+		auto it = prev(idx.end());
+		auto id = (*it).first;
+		auto prio = (*it).second;
 
-		return { v.back(), i };
+		return { data_.at(prio).at(id), prio};
 	};
 
 	pair<T, int> PopMax() { 
-		auto it = prev(data_.end());
-		auto i = (*it).first;
-		auto& v = (*it).second;
+		auto it = prev(idx.end());
+		auto id = (*it).first;
+		auto prio = (*it).second;
+		auto& m = data_[prio];
+		T obj = move(m.at(id));
 
-		T obj = move(v.back());
-		v.pop_back();
-		if (v.size() == 0) { data_.erase(it); }
+		m.erase(id);
+		idx.erase(id);
 
-		return { move(obj), i };
+		return {move(obj), prio};
 	}
 
 private:
-	uint32_t idx = 0;
-	T d;
-	map<uint32_t, vector<T>> data_;
+	int cnt = -1;
+	map<int, map<Id, T>> data_; // priority->elements
+	map<int, int> idx; //map from cnt to Id
 };
 
 
