@@ -28,7 +28,7 @@ public:
 	template <typename ObjInputIt, typename IdOutputIt>
 	void Add(ObjInputIt range_begin, ObjInputIt range_end, IdOutputIt ids_begin) {
 		for (auto it = range_begin; it != range_end; ++it) {
-			Add(*it);
+			*(ids_begin++) = Add(move(*it));
 		}
 	}
 
@@ -88,6 +88,15 @@ public:
 
 void TestNoCopy() {
 	PriorityCollection<StringNonCopyable> strings;
+
+	vector<int>ids(2, 0);
+	vector<StringNonCopyable> v;
+	StringNonCopyable a = "aaa";
+	StringNonCopyable b = "bbb";
+	v.push_back(move(a));
+	v.push_back(move(b));
+	strings.Add(begin(v), end(v), ids.begin());
+
 	const auto white_id = strings.Add("white");
 	const auto yellow_id = strings.Add("yellow");
 	const auto red_id = strings.Add("red");
@@ -125,3 +134,6 @@ int main() {
 	RUN_TEST(tr, TestNoCopy);
 	return 0;
 }
+
+
+//r<std::vector<int> >; T = __CourseraNonCopyable<int>]':\n/tmp/submissionpo141d3x/priority_collection.cpp:333:66:   required from here\n/tmp/submissionpo141d3x/priority_collection.cpp:31:7: error: use of deleted function '__CourseraNonCopyable<T>::__CourseraNonCopyable(const __CourseraNonCopyable<T>&) [with T = int]'\n    Add(*it);\n    ~~~^~~~~\ncompilation terminated due to -Wfatal-errors.\n"
