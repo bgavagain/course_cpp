@@ -18,6 +18,9 @@
     <ClCompile Include="explore_key_words.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="solution.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="test_runner.h">
@@ -26,8 +29,5 @@
     <ClInclude Include="profile.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include=".gitignore" />
   </ItemGroup>
 </Project>
