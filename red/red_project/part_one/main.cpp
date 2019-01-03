@@ -42,7 +42,7 @@ void TestSerpFormat() {
   const vector<string> queries = {"london", "the"};
   const vector<string> expected = {
     "london: {docid: 0, hitcount: 1}",
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "the:",
       "{docid: 0, hitcount: 1}",
       "{docid: 1, hitcount: 1}"
@@ -68,7 +68,7 @@ void TestTop5() {
 
   const vector<string> queries = {"milk", "water", "rock"};
   const vector<string> expected = {
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "milk:",
       "{docid: 0, hitcount: 1}",
       "{docid: 1, hitcount: 1}",
@@ -76,7 +76,7 @@ void TestTop5() {
       "{docid: 3, hitcount: 1}",
       "{docid: 4, hitcount: 1}"
     }),
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "water:",
       "{docid: 7, hitcount: 1}",
       "{docid: 8, hitcount: 1}",
@@ -95,19 +95,19 @@ void TestHitcount() {
   };
   const vector<string> queries = {"the", "wall", "all", "is", "the is"};
   const vector<string> expected = {
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "the:",
       "{docid: 0, hitcount: 2}",
       "{docid: 1, hitcount: 1}",
     }),
     "wall: {docid: 1, hitcount: 1}",
     "all:",
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "is:",
       "{docid: 3, hitcount: 4}",
       "{docid: 0, hitcount: 1}",
     }),
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "the is:",
       "{docid: 3, hitcount: 4}",
       "{docid: 0, hitcount: 3}",
@@ -145,7 +145,7 @@ void TestRanking() {
 
   const vector<string> queries = {"moscow is the capital of russia"};
   const vector<string> expected = {
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "moscow is the capital of russia:",
       "{docid: 7, hitcount: 6}",
       "{docid: 14, hitcount: 6}",
@@ -181,12 +181,12 @@ void TestBasicSearch() {
   };
 
   const vector<string> expected = {
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "we need some help:",
       "{docid: 9, hitcount: 2}",
       "{docid: 0, hitcount: 1}"
     }),
-    Join(' ', vector{
+    Join(' ', vector<string>{
       "it:",
       "{docid: 8, hitcount: 2}",
       "{docid: 6, hitcount: 1}",
