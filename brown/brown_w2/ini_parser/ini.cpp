@@ -15,7 +15,7 @@ std::ostream& operator << (ostream& os, const Ini::Section& s) {
 namespace Ini {
 
 Section& Document::AddSection(string name) {
-	return sections.at(name);
+	return sections[name];
 }
 
 const Section& Document::GetSection(const string& name) const {
@@ -23,11 +23,26 @@ const Section& Document::GetSection(const string& name) const {
 }
 
 size_t Document::SectionCount() const {
-	return 0;
+	return sections.size();
 }
 
 Document Load(istream& input) {
-	return {};
+	Document res;
+	Section* section = nullptr;
+	for (string s; getline(input, s);) {
+		if (s.empty()) continue;
+
+		if (s[0] == '[') {
+			section = &res.AddSection(s.substr(1, s.size() - 2));
+		} else {
+			if (section) {
+				auto pos = s.find('=');
+				(*section)[s.substr(0, pos)] = s.substr(pos + 1, s.size() - pos - 1);
+			}
+		}
+	}
+
+	return res;
 }
 
 }
