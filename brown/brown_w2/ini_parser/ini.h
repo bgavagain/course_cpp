@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <iostream>
 #include <unordered_map>
 
 namespace Ini {
@@ -17,4 +18,7 @@ private:
 };
 
 Document Load(std::istream& input);
+
 }
+
+std::ostream& operator << (std::ostream& os, const Ini::Section& s);

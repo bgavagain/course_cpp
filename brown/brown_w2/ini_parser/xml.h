@@ -38,9 +38,6 @@ private:
 
 Document Load(istream& input);
 
-
-
-
 template <typename T>
 inline T Node::AttributeValue(const string& name) const {
 	istringstream attr_input(attrs.at(name));
