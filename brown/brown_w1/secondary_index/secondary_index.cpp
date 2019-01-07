@@ -16,10 +16,9 @@ struct Record {
 };
 
 struct RecordIdx {
-	Record rec;
-	multimap<int, Record>::iterator karma;
-	multimap<int, Record>::iterator timestamp;
-	multimap<string, Record>::iterator user;
+	multimap<int, Record*>::iterator karma;
+	multimap<int, Record*>::iterator timestamp;
+	multimap<string, Record*>::iterator user;
 };
 
 class Database {
@@ -27,44 +26,34 @@ public:
 	bool Put(const Record& record) {
 		if (data.count(record.id)) { return false; }
 
-		auto karma = karma_idx.insert(make_pair(record.karma, record));
-		auto timestamp = timestamp_idx.insert(make_pair(record.timestamp, record));
-		auto user = user_idx.insert(make_pair(record.user, record));
+		data[record.id] = record;
+		Record* ptr = &data[record.id];
 
-		RecordIdx rec = { record, karma, timestamp, user };
-		data[record.id] = rec;
+		auto karma = karma_idx.insert(make_pair(record.karma, ptr));
+		auto timestamp = timestamp_idx.insert(make_pair(record.timestamp, ptr));
+		auto user = user_idx.insert(make_pair(record.user, ptr));
+
+		RecordIdx rec = { karma, timestamp, user };
+		idx[record.id] = rec;
 
 		return true;
 	}
 
 	const Record* GetById(const string& id) const {
 		if (!data.count(id)) { return nullptr; }
-		else { return &data.at(id).rec; }
+		else { return &data.at(id); }
 	}
 
-	//template<typename T>
-	//void DeleteIdx(multimap<T, Record>& mm, T val, const Record & rec) {
-	//	auto r = mm.equal_range(val);
-	//	for (auto it = r.first; it != r.second; ++it) {
-	//		auto v = *it;
-	//		if (v.second.id == rec.id) {
-	//			mm.erase(it);
-	//			break;
-	//		}
-	//	}
-	//}
 
 	bool Erase(const string& id) { 
 		if (!data.count(id)) { return false; }
 
-		auto rec = data[id];
-		karma_idx.erase(rec.karma);
-		timestamp_idx.erase(rec.timestamp);
-		user_idx.erase(rec.user);
-		//DeleteIdx(karma_idx, rec.karma, rec);
-		//DeleteIdx(timestamp_idx, rec.timestamp, rec);
-		//DeleteIdx(user_idx, rec.user, rec);
+		auto ix = idx[id];
+		karma_idx.erase(ix.karma);
+		timestamp_idx.erase(ix.timestamp);
+		user_idx.erase(ix.user);
 		data.erase(id);
+		idx.erase(id);
 
 		return true; 
 	}
@@ -85,7 +74,7 @@ public:
 		auto u = karma_idx.upper_bound(high);
 		for (auto& it = l; it != u; ++it) {
 			auto& val = *it;
-			if (!callback(val.second)) { break; }
+			if (!callback(*val.second)) { break; }
 		}
 	}
 
@@ -95,14 +84,15 @@ public:
 		auto u = user_idx.upper_bound(user);
 		for (auto& it = l; it != u; ++it) {
 			auto& val = *it;
-			if (!callback(val.second)) { break; }
+			if (!callback(*val.second)) { break; }
 		}
 	}
 private:
-	map<string, RecordIdx> data;
-	multimap<int, Record> karma_idx;
-	multimap<int, Record> timestamp_idx;
-	multimap<string, Record> user_idx;
+	map<string, Record> data;
+	map<string, RecordIdx> idx;
+	multimap<int, Record*> karma_idx;
+	multimap<int, Record*> timestamp_idx;
+	multimap<string, Record*> user_idx;
 };
 
 void TestRangeBoundaries() {
@@ -112,10 +102,13 @@ void TestRangeBoundaries() {
 	Database db;
 	db.Put({ "id1", "Hello there", "master", 1536107260, good_karma });
 	db.Put({ "id2", "O>>-<", "general2", 1536107260, bad_karma });
+	db.Put({ "id3", "QQQ", "general2", 1536107260, bad_karma });
+
+	db.Erase("id2");
 
 	int count = 0;
-	db.RangeByKarma(bad_karma, good_karma, [&count](const Record&) {
-		++count;
+	db.RangeByKarma(bad_karma, good_karma, [&count](const Record& rec) {
+ 		++count;
 		return true;
 		});
 
