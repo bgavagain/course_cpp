@@ -44,7 +44,6 @@ public:
 		else { return &data.at(id); }
 	}
 
-
 	bool Erase(const string& id) { 
 		if (!data.count(id)) { return false; }
 
@@ -64,7 +63,7 @@ public:
 		auto u = timestamp_idx.upper_bound(high);
 		for (auto& it = l; it != u; ++it) {
 			auto& val = *it;
-			if (!callback(val.second)) { break; }
+			if (!callback(*val.second)) { break; }
 		}
 	}
 
@@ -104,15 +103,25 @@ void TestRangeBoundaries() {
 	db.Put({ "id2", "O>>-<", "general2", 1536107260, bad_karma });
 	db.Put({ "id3", "QQQ", "general2", 1536107260, bad_karma });
 
+	int count = 0;
+	db.RangeByTimestamp(1536107250, 1536107270, [&count](const Record& rec) {
+		++count;
+		return true;
+		});
+
+	ASSERT_EQUAL(3, count);
+
 	db.Erase("id2");
 
-	int count = 0;
+	count = 0;
 	db.RangeByKarma(bad_karma, good_karma, [&count](const Record& rec) {
  		++count;
 		return true;
 		});
 
 	ASSERT_EQUAL(2, count);
+
+
 }
 
 void TestSameUser() {
