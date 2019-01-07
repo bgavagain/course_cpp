@@ -15,42 +15,55 @@ struct Record {
 	int karma;
 };
 
+struct RecordIdx {
+	Record rec;
+	multimap<int, Record>::iterator karma;
+	multimap<int, Record>::iterator timestamp;
+	multimap<string, Record>::iterator user;
+};
+
 class Database {
 public:
 	bool Put(const Record& record) {
 		if (data.count(record.id)) { return false; }
-		data[record.id] = record;
-		karma_idx.insert(make_pair(record.karma, record));
-		timestamp_idx.insert(make_pair(record.timestamp, record));
-		user_idx.insert(make_pair(record.user, record));
+
+		auto karma = karma_idx.insert(make_pair(record.karma, record));
+		auto timestamp = timestamp_idx.insert(make_pair(record.timestamp, record));
+		auto user = user_idx.insert(make_pair(record.user, record));
+
+		RecordIdx rec = { record, karma, timestamp, user };
+		data[record.id] = rec;
+
 		return true;
 	}
 
 	const Record* GetById(const string& id) const {
 		if (!data.count(id)) { return nullptr; }
-		else { return &data.at(id); }
+		else { return &data.at(id).rec; }
 	}
 
-	template<typename T>
-	void DeleteIdx(multimap<T, Record>& mm, T val, const Record & rec) {
-		auto low = mm.lower_bound(val);
-		auto up = mm.upper_bound(val);
-		for (auto it = low; it != up; ++it) {
-			auto v = *it;
-			if (v.second.id == rec.id) {
-				mm.erase(it);
-				break;
-			}
-		}
-	}
+	//template<typename T>
+	//void DeleteIdx(multimap<T, Record>& mm, T val, const Record & rec) {
+	//	auto r = mm.equal_range(val);
+	//	for (auto it = r.first; it != r.second; ++it) {
+	//		auto v = *it;
+	//		if (v.second.id == rec.id) {
+	//			mm.erase(it);
+	//			break;
+	//		}
+	//	}
+	//}
 
 	bool Erase(const string& id) { 
 		if (!data.count(id)) { return false; }
 
 		auto rec = data[id];
-		DeleteIdx(karma_idx, rec.karma, rec);
-		DeleteIdx(timestamp_idx, rec.timestamp, rec);
-		DeleteIdx(user_idx, rec.user, rec);
+		karma_idx.erase(rec.karma);
+		timestamp_idx.erase(rec.timestamp);
+		user_idx.erase(rec.user);
+		//DeleteIdx(karma_idx, rec.karma, rec);
+		//DeleteIdx(timestamp_idx, rec.timestamp, rec);
+		//DeleteIdx(user_idx, rec.user, rec);
 		data.erase(id);
 
 		return true; 
@@ -86,7 +99,7 @@ public:
 		}
 	}
 private:
-	map<string, Record> data;
+	map<string, RecordIdx> data;
 	multimap<int, Record> karma_idx;
 	multimap<int, Record> timestamp_idx;
 	multimap<string, Record> user_idx;
