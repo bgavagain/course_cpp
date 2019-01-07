@@ -158,11 +158,13 @@
     <ClCompile Include="ini.cpp" />
     <ClCompile Include="ini_parser.cpp" />
     <ClCompile Include="json.cpp" />
+    <ClCompile Include="xml.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ini.h" />
     <ClInclude Include="json.h" />
     <ClInclude Include="test_runner.h" />
+    <ClInclude Include="xml.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
