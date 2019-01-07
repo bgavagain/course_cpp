@@ -59,12 +59,6 @@ namespace StringUtils {
 	};
 }
 
-namespace StringUtils {
-	struct Wrapper {
-		string value;
-	};
-}
-
 void TestLoadFromXml() {
 	istringstream xml_input(R"(<july>
     <spend amount="2500" category="food"></spend>
