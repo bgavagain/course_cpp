@@ -155,6 +155,7 @@
   <ItemGroup>
     <ClCompile Include="collide.cpp" />
     <ClCompile Include="geo2d.cpp" />
+    <ClCompile Include="solution.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="game_object.h" />
