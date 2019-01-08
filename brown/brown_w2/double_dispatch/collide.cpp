@@ -8,48 +8,113 @@
 
 using namespace std;
 
-class Unit : public GameObject {
+template <typename T>
+struct Collider : GameObject {
+	bool Collide(const GameObject& that) const final {
+		return that.CollideWith(static_cast<const T&>(*this));
+	}
+};
+class Unit final : public Collider<Unit> {
 public:
-	explicit Unit(geo2d::Point position) {}
-	virtual bool Collide(const GameObject& that) const override { return false; }
-	virtual bool CollideWith(const Unit& that) const override { return false; }
-	virtual bool CollideWith(const Building& that) const override { return false; }
-	virtual bool CollideWith(const Tower& that) const override { return false; }
-	virtual bool CollideWith(const Fence& that) const override { return false; }
+	Unit(geo2d::Point position) : geo_(position) {}
+	const geo2d::Point& GetPosition() const { return geo_; }
+	virtual bool CollideWith(const Unit& that) const override;
+	virtual bool CollideWith(const Building& that) const override;
+	virtual bool CollideWith(const Tower& that) const override;
+	virtual bool CollideWith(const Fence& that) const override;
+private:
+	geo2d::Point geo_;
+};
+class Building final: public Collider<Building> {
+public:
+	explicit Building(geo2d::Rectangle geometry) : geo_(geometry) {}
+	const geo2d::Rectangle& GetGeometry() const { return geo_; }
+	virtual bool CollideWith(const Unit& that) const override;
+	virtual bool CollideWith(const Building& that) const override;
+	virtual bool CollideWith(const Tower& that) const override;
+	virtual bool CollideWith(const Fence& that) const override;
+private:
+	geo2d::Rectangle geo_;
 };
 
-class Building : public GameObject {
+class Tower : public Collider<Tower> {
 public:
-	explicit Building(geo2d::Rectangle geometry) {}
-	virtual bool Collide(const GameObject& that) const override { return false; }
-	virtual bool CollideWith(const Unit& that) const override { return false; }
-	virtual bool CollideWith(const Building& that) const override { return false; }
-	virtual bool CollideWith(const Tower& that) const override { return false; }
-	virtual bool CollideWith(const Fence& that) const override { return false; }
+	explicit Tower(geo2d::Circle geometry) : geo_(geometry) {}
+	const geo2d::Circle& GetGeometry() const { return geo_; }
+	virtual bool CollideWith(const Unit& that) const override;
+	virtual bool CollideWith(const Building& that) const override;
+	virtual bool CollideWith(const Tower& that) const override;
+	virtual bool CollideWith(const Fence& that) const override;
+private:
+	geo2d::Circle geo_;
 };
 
-class Tower : public GameObject {
+class Fence : public Collider<Fence> {
 public:
-	explicit Tower(geo2d::Circle geometry) {}
-	virtual bool Collide(const GameObject& that) const override { return false; }
-	virtual bool CollideWith(const Unit& that) const override { return false; }
-	virtual bool CollideWith(const Building& that) const override { return false; }
-	virtual bool CollideWith(const Tower& that) const override { return false; }
-	virtual bool CollideWith(const Fence& that) const override { return false; }
+	explicit Fence(geo2d::Segment geometry) : geo_(geometry) {}
+	const geo2d::Segment& GetGeometry() const { return geo_; }
+	virtual bool CollideWith(const Unit& that) const override;
+	virtual bool CollideWith(const Building& that) const override;
+	virtual bool CollideWith(const Tower& that) const override;
+	virtual bool CollideWith(const Fence& that) const override;
+private:
+	geo2d::Segment geo_;
 };
 
-class Fence : public GameObject {
-public:
-	explicit Fence(geo2d::Segment geometry) {}
-	virtual bool Collide(const GameObject& that) const override { return false; }
-	virtual bool CollideWith(const Unit& that) const override { return false; }
-	virtual bool CollideWith(const Building& that) const override { return false; }
-	virtual bool CollideWith(const Tower& that) const override { return false; }
-	virtual bool CollideWith(const Fence& that) const override { return false; }
-};
+bool Unit::CollideWith(const Unit& that) const {
+	return geo2d::Collide(geo_, that.GetPosition());
+}
+bool Unit::CollideWith(const Building& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Unit::CollideWith(const Tower& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Unit::CollideWith(const Fence& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+
+bool Building::CollideWith(const Unit& that) const {
+	return geo2d::Collide(geo_, that.GetPosition());
+}
+bool Building::CollideWith(const Building& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Building::CollideWith(const Tower& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Building::CollideWith(const Fence& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+
+bool Tower::CollideWith(const Unit& that) const {
+	return geo2d::Collide(geo_, that.GetPosition());
+}
+bool Tower::CollideWith(const Building& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Tower::CollideWith(const Tower& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Tower::CollideWith(const Fence& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+
+bool Fence::CollideWith(const Unit& that) const {
+	return geo2d::Collide(geo_, that.GetPosition());
+}
+bool Fence::CollideWith(const Building& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Fence::CollideWith(const Tower& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
+bool Fence::CollideWith(const Fence& that) const {
+	return geo2d::Collide(geo_, that.GetGeometry());
+}
 
 bool Collide(const GameObject& first, const GameObject& second) {
-	return false;
+	return first.Collide(second);
 }
 
 void TestAddingNewObjectOnMap() {
