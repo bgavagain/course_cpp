@@ -10,24 +10,43 @@ using namespace std;
 
 class Unit : public GameObject {
 public:
-	explicit Unit(geo2d::Point position);
+	explicit Unit(geo2d::Point position) {}
+	virtual bool Collide(const GameObject& that) const override { return false; }
+	virtual bool CollideWith(const Unit& that) const override { return false; }
+	virtual bool CollideWith(const Building& that) const override { return false; }
+	virtual bool CollideWith(const Tower& that) const override { return false; }
+	virtual bool CollideWith(const Fence& that) const override { return false; }
 };
 
 class Building : public GameObject {
 public:
-	explicit Building(geo2d::Rectangle geometry);
+	explicit Building(geo2d::Rectangle geometry) {}
+	virtual bool Collide(const GameObject& that) const override { return false; }
+	virtual bool CollideWith(const Unit& that) const override { return false; }
+	virtual bool CollideWith(const Building& that) const override { return false; }
+	virtual bool CollideWith(const Tower& that) const override { return false; }
+	virtual bool CollideWith(const Fence& that) const override { return false; }
 };
 
 class Tower : public GameObject {
 public:
-	explicit Tower(geo2d::Circle geometry);
+	explicit Tower(geo2d::Circle geometry) {}
+	virtual bool Collide(const GameObject& that) const override { return false; }
+	virtual bool CollideWith(const Unit& that) const override { return false; }
+	virtual bool CollideWith(const Building& that) const override { return false; }
+	virtual bool CollideWith(const Tower& that) const override { return false; }
+	virtual bool CollideWith(const Fence& that) const override { return false; }
 };
 
 class Fence : public GameObject {
 public:
-	explicit Fence(geo2d::Segment geometry);
+	explicit Fence(geo2d::Segment geometry) {}
+	virtual bool Collide(const GameObject& that) const override { return false; }
+	virtual bool CollideWith(const Unit& that) const override { return false; }
+	virtual bool CollideWith(const Building& that) const override { return false; }
+	virtual bool CollideWith(const Tower& that) const override { return false; }
+	virtual bool CollideWith(const Fence& that) const override { return false; }
 };
-
 
 bool Collide(const GameObject& first, const GameObject& second) {
 	return false;
