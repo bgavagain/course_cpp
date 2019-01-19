@@ -1,5 +1,6 @@
 #include "search_server.h"
 #include "iterator_range.h"
+#include "duration.h"
 
 #include <algorithm>
 #include <iterator>
@@ -26,40 +27,53 @@ void SearchServer::UpdateDocumentBase(istream& document_input) {
 }
 
 void SearchServer::AddQueriesStream(
-  istream& query_input, ostream& search_results_output
-) {
+  istream& query_input, ostream& search_results_output ) {
+  TotalDuration split("split");
+  TotalDuration lookup("lookup");
+  TotalDuration process("process");
+  TotalDuration output("output");
+
   for (string current_query; getline(query_input, current_query); ) {
-    const auto words = SplitIntoWords(current_query);
+    vector<string> words;
+    {
+      ADD_DURATION(split);
+      words = SplitIntoWords(current_query); 
+    }
 
     map<size_t, size_t> docid_count;
-    for (const auto& word : words) {
-      for (const size_t docid : index.Lookup(word)) {
-        docid_count[docid]++;
+    {
+      ADD_DURATION(lookup);
+      for (const auto& word : words) {
+        for (const size_t docid : index.Lookup(word)) {
+          docid_count[docid]++;
+        }
       }
     }
 
     vector<pair<size_t, size_t>> search_results(
-      docid_count.begin(), docid_count.end()
-    );
-    sort(
-      begin(search_results),
-      end(search_results),
-      [](pair<size_t, size_t> lhs, pair<size_t, size_t> rhs) {
+      docid_count.begin(), docid_count.end());
+    { ADD_DURATION(process);
+      sort(
+        begin(search_results),
+        end(search_results),
+        [](pair<size_t, size_t> lhs, pair<size_t, size_t> rhs) {
         int64_t lhs_docid = lhs.first;
         auto lhs_hit_count = lhs.second;
         int64_t rhs_docid = rhs.first;
         auto rhs_hit_count = rhs.second;
         return make_pair(lhs_hit_count, -lhs_docid) > make_pair(rhs_hit_count, -rhs_docid);
-      }
-    );
-
-    search_results_output << current_query << ':';
-    for (auto [docid, hitcount] : Head(search_results, 5)) {
-      search_results_output << " {"
-        << "docid: " << docid << ", "
-        << "hitcount: " << hitcount << '}';
+      }); 
     }
-    search_results_output << endl;
+    
+    { ADD_DURATION(output);
+      search_results_output << current_query << ':';
+      for (auto[docid, hitcount] : Head(search_results, 5)) {
+        search_results_output << " {"
+          << "docid: " << docid << ", "
+          << "hitcount: " << hitcount << '}';
+      }
+      search_results_output << endl;
+    }
   }
 }
 
