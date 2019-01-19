@@ -153,6 +153,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="duration.h" />
     <ClInclude Include="iterator_range.h" />
     <ClInclude Include="parse.h" />
     <ClInclude Include="profile.h" />
