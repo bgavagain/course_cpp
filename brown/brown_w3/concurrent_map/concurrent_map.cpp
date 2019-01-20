@@ -26,7 +26,7 @@ public:
 	};
 
   struct ReadAccess {
-    //mutable lock_guard<mutex> guard;
+    lock_guard<mutex> guard;
     const V& ref_to_value;
   };
 
@@ -39,44 +39,44 @@ public:
 
   ReadAccess At(const K& key) const {
     const auto& buk = GetBucket(key);
-    //lock_guard(buk.mut);
-    return { buk.data.at(key) };
+    return { lock_guard(buk.mut), buk.data.at(key) };
   }
 
   bool Has(const K& key) const {
-    auto& buk = GetBucket(key);
-    //lock_guard(buk.mut);
+    const auto& buk = GetBucket(key);
+    lock_guard(buk.mut);
     return buk.data.count(key);
   }
 
 	MapType BuildOrdinaryMap() const {
 		MapType res;
 		{
-			for (const auto& buk : buckets_) {
-				//lock_guard g(buk.mut); 
+			for (auto& buk : buckets_) {
+				lock_guard g(buk.mut); 
 				res.insert(buk.data.begin(), buk.data.end());
 			}
 		}
 		return res;
 	}
 private:
+  Hash hasher_;
+
 	struct Bucket {
-		mutex mut;
-		unordered_map<K, V> data;
+		mutable mutex mut;
+		MapType data;
 	};
 
 	Bucket& GetBucket(K key) {
-    size_t pos = 0; // key % buckets_.size();
+    size_t pos = hasher_(key) % buckets_.size();
 		return *(buckets_.begin() + pos);
 	}
 
   const Bucket& GetBucket(K key) const {
-    size_t pos = 0;// key % buckets_.size();
+    size_t pos = hasher_(key) % buckets_.size();
     return *(buckets_.cbegin() + pos);
   }
 
-  Hash hasher_;
-	vector<Bucket> buckets_;
+  mutable vector<Bucket> buckets_;
 };
 
 void RunConcurrentUpdates(
@@ -114,166 +114,174 @@ void TestConcurrentUpdate() {
   }
 }
 
-//void TestReadAndWrite() {
-//  ConcurrentMap<size_t, string> cm(5);
-//
-//  auto updater = [&cm] {
-//    for (size_t i = 0; i < 50000; ++i) {
-//      cm[i].ref_to_value += 'a';
-//    }
-//  };
-//  auto reader = [&cm] {
-//    vector<string> result(50000);
-//    for (size_t i = 0; i < result.size(); ++i) {
-//      result[i] = cm[i].ref_to_value;
-//    }
-//    return result;
-//  };
-//
-//  auto u1 = async(updater);
-//  auto r1 = async(reader);
-//  auto u2 = async(updater);
-//  auto r2 = async(reader);
-//
-//  u1.get();
-//  u2.get();
-//
-//  for (auto f : { &r1, &r2 }) {
-//    auto result = f->get();
-//    ASSERT(all_of(result.begin(), result.end(), [](const string& s) {
-//      return s.empty() || s == "a" || s == "aa";
-//    }));
-//  }
-//}
-//
-//void TestSpeedup() {
-//  {
-//    ConcurrentMap<int, int> single_lock(1);
-//
-//    LOG_DURATION("Single lock");
-//    RunConcurrentUpdates(single_lock, 4, 50000);
-//  }
-//  {
-//    ConcurrentMap<int, int> many_locks(100);
-//
-//    LOG_DURATION("100 locks");
-//    RunConcurrentUpdates(many_locks, 4, 50000);
-//  }
-//}
-//
-//void TestConstAccess() {
-//  const unordered_map<int, string> expected = {
-//    {1, "one"},
-//    {2, "two"},
-//    {3, "three"},
-//    {31, "thirty one"},
-//    {127, "one hundred and twenty seven"},
-//    {1598, "fifteen hundred and ninety eight"}
-//  };
-//
-//  const ConcurrentMap<int, string> cm = [&expected] {
-//    ConcurrentMap<int, string> result(3);
-//    for (const auto&[k, v] : expected) {
-//      result[k].ref_to_value = v;
-//    }
-//    return result;
-//  }();
-//
-//  vector<future<string>> futures;
-//  for (int i = 0; i < 10; ++i) {
-//    futures.push_back(async([&cm, i] {
-//      try {
-//        return cm.At(i).ref_to_value;
-//      }
-//      catch (exception&) {
-//        return string();
-//      }
-//    }));
-//  }
-//  futures.clear();
-//
-//  ASSERT_EQUAL(cm.BuildOrdinaryMap(), expected);
-//}
-//
-//void TestStringKeys() {
-//  const unordered_map<string, string> expected = {
-//    {"one", "ONE"},
-//    {"two", "TWO"},
-//    {"three", "THREE"},
-//    {"thirty one", "THIRTY ONE"},
-//  };
-//
-//  const ConcurrentMap<string, string> cm = [&expected] {
-//    ConcurrentMap<string, string> result(2);
-//    for (const auto&[k, v] : expected) {
-//      result[k].ref_to_value = v;
-//    }
-//    return result;
-//  }();
-//
-//  ASSERT_EQUAL(cm.BuildOrdinaryMap(), expected);
-//}
-//
-//struct Point {
-//  int x, y;
-//};
-//
-//struct PointHash {
-//  size_t operator()(Point p) const {
-//    std::hash<int> h;
-//    return h(p.x) * 3571 + h(p.y);
-//  }
-//};
-//
-//bool operator==(Point lhs, Point rhs) {
-//  return lhs.x == rhs.x && lhs.y == rhs.y;
-//}
-//
-//ostream& operator<<(ostream& os, const Point& p) {
-//  os << p.x << '.' << p.y;
-//  return os;
-//}
+template <typename K, typename V>
+ostream& operator<<(ostream& os, const unordered_map<K, V> mm) {
+  for (const auto& m : mm) {
+    os << m.first << ": " << m.second << ", ";
+  }
+  return os;
+}
 
-//void TestUserType() {
-//  ConcurrentMap<Point, size_t, PointHash> point_weight(5);
-//
-//  vector<future<void>> futures;
-//  for (int i = 0; i < 1000; ++i) {
-//    futures.push_back(async([&point_weight, i] {
-//      point_weight[Point{ i, i }].ref_to_value = i;
-//    }));
-//  }
-//
-//  futures.clear();
-//
-//  for (int i = 0; i < 1000; ++i) {
-//    ASSERT_EQUAL(point_weight.At(Point{ i, i }).ref_to_value, i);
-//  }
-//
-//  const auto weights = point_weight.BuildOrdinaryMap();
-//  for (int i = 0; i < 1000; ++i) {
-//    ASSERT_EQUAL(weights.at(Point{ i, i }), i);
-//  }
-//}
+void TestReadAndWrite() {
+  ConcurrentMap<size_t, string> cm(5);
 
-//void TestHas() {
-//  ConcurrentMap<int, int> cm(2);
-//  cm[1].ref_to_value = 100;
-//  cm[2].ref_to_value = 200;
-//
-//  const auto& const_map = std::as_const(cm);
-//  ASSERT(const_map.Has(1));
-//  ASSERT(const_map.Has(2));
-//  ASSERT(!const_map.Has(3));
-//}
+  auto updater = [&cm] {
+    for (size_t i = 0; i < 50000; ++i) {
+      cm[i].ref_to_value += 'a';
+    }
+  };
+  auto reader = [&cm] {
+    vector<string> result(50000);
+    for (size_t i = 0; i < result.size(); ++i) {
+      result[i] = cm[i].ref_to_value;
+    }
+    return result;
+  };
+
+  auto u1 = async(updater);
+  auto r1 = async(reader);
+  auto u2 = async(updater);
+  auto r2 = async(reader);
+
+  u1.get();
+  u2.get();
+
+  for (auto f : { &r1, &r2 }) {
+    auto result = f->get();
+    ASSERT(all_of(result.begin(), result.end(), [](const string& s) {
+      return s.empty() || s == "a" || s == "aa";
+    }));
+  }
+}
+
+void TestSpeedup() {
+  {
+    ConcurrentMap<int, int> single_lock(1);
+
+    LOG_DURATION("Single lock");
+    RunConcurrentUpdates(single_lock, 4, 50000);
+  }
+  {
+    ConcurrentMap<int, int> many_locks(100);
+
+    LOG_DURATION("100 locks");
+    RunConcurrentUpdates(many_locks, 4, 50000);
+  }
+}
+
+void TestConstAccess() {
+  const unordered_map<int, string> expected = {
+    {1, "one"},
+    {2, "two"},
+    {3, "three"},
+    {31, "thirty one"},
+    {127, "one hundred and twenty seven"},
+    {1598, "fifteen hundred and ninety eight"}
+  };
+
+  const ConcurrentMap<int, string> cm = [&expected] {
+    ConcurrentMap<int, string> result(3);
+    for (const auto&[k, v] : expected) {
+      result[k].ref_to_value = v;
+    }
+    return result;
+  }();
+
+  vector<future<string>> futures;
+  for (int i = 0; i < 10; ++i) {
+    futures.push_back(async([&cm, i] {
+      try {
+        return cm.At(i).ref_to_value;
+      }
+      catch (exception&) {
+        return string();
+      }
+    }));
+  }
+  futures.clear();
+
+  ASSERT_EQUAL(cm.BuildOrdinaryMap(), expected);
+}
+
+void TestStringKeys() {
+  const unordered_map<string, string> expected = {
+    {"one", "ONE"},
+    {"two", "TWO"},
+    {"three", "THREE"},
+    {"thirty one", "THIRTY ONE"},
+  };
+
+  const ConcurrentMap<string, string> cm = [&expected] {
+    ConcurrentMap<string, string> result(2);
+    for (const auto&[k, v] : expected) {
+      result[k].ref_to_value = v;
+    }
+    return result;
+  }();
+
+  ASSERT_EQUAL(cm.BuildOrdinaryMap(), expected);
+}
+
+struct Point {
+  int x, y;
+};
+
+struct PointHash {
+  size_t operator()(Point p) const {
+    std::hash<int> h;
+    return h(p.x) * 3571 + h(p.y);
+  }
+};
+
+bool operator==(Point lhs, Point rhs) {
+  return lhs.x == rhs.x && lhs.y == rhs.y;
+}
+
+ostream& operator<<(ostream& os, const Point& p) {
+  os << p.x << '.' << p.y;
+  return os;
+}
+
+void TestUserType() {
+  ConcurrentMap<Point, size_t, PointHash> point_weight(5);
+
+  vector<future<void>> futures;
+  for (int i = 0; i < 1000; ++i) {
+    futures.push_back(async([&point_weight, i] {
+      point_weight[Point{ i, i }].ref_to_value = i;
+    }));
+  }
+
+  futures.clear();
+
+  for (int i = 0; i < 1000; ++i) {
+    ASSERT_EQUAL(point_weight.At(Point{ i, i }).ref_to_value, i);
+  }
+
+  const auto weights = point_weight.BuildOrdinaryMap();
+  for (int i = 0; i < 1000; ++i) {
+    ASSERT_EQUAL(weights.at(Point{ i, i }), i);
+  }
+}
+
+void TestHas() {
+  ConcurrentMap<int, int> cm(2);
+  cm[1].ref_to_value = 100;
+  cm[2].ref_to_value = 200;
+
+  const auto& const_map = std::as_const(cm);
+  ASSERT(const_map.Has(1));
+  ASSERT(const_map.Has(2));
+  ASSERT(!const_map.Has(3));
+}
 
 int main() {
   TestRunner tr;
   RUN_TEST(tr, TestConcurrentUpdate);
-  //RUN_TEST(tr, TestReadAndWrite);
-  //RUN_TEST(tr, TestSpeedup);
-  //RUN_TEST(tr, TestConstAccess);
-  //RUN_TEST(tr, TestStringKeys);
-  //RUN_TEST(tr, TestUserType);
-  //RUN_TEST(tr, TestHas);
+  RUN_TEST(tr, TestReadAndWrite);
+  RUN_TEST(tr, TestSpeedup);
+  RUN_TEST(tr, TestConstAccess);
+  RUN_TEST(tr, TestStringKeys);
+  RUN_TEST(tr, TestUserType);
+  RUN_TEST(tr, TestHas);
 }
