@@ -44,7 +44,7 @@ public:
 
   bool Has(const K& key) const {
     const auto& buk = GetBucket(key);
-    lock_guard(buk.mut);
+    //lock_guard(buk.mut);
     return buk.data.count(key);
   }
 
@@ -114,8 +114,8 @@ void TestConcurrentUpdate() {
   }
 }
 
-template <typename K, typename V>
-ostream& operator<<(ostream& os, const unordered_map<K, V> mm) {
+template <typename K, typename V, typename Hash>
+ostream& operator<<(ostream& os, const unordered_map<K, V, Hash>& mm) {
   for (const auto& m : mm) {
     os << m.first << ": " << m.second << ", ";
   }
@@ -284,4 +284,6 @@ int main() {
   RUN_TEST(tr, TestStringKeys);
   RUN_TEST(tr, TestUserType);
   RUN_TEST(tr, TestHas);
+
+  return 0;
 }
